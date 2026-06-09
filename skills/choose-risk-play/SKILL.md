@@ -1,6 +1,6 @@
 ---
 name: choose-risk-play
-description: choose an optional fifa world cup risk play from the daily claim catalog using the current match board and standings, respecting match/team/player id constraints, using only ids from the board, and returning null when no claim is clearly strong; use when the daily prompt asks for a risk play decision.
+description: choose an optional fifa world cup risk play from the current claim catalog by using only ids from the game board and match relationships that are consistent with the board; use when the daily prompt asks for a risk play decision.
 ---
 
 # Choose Risk Play
@@ -8,19 +8,22 @@ description: choose an optional fifa world cup risk play from the daily claim ca
 ## Goal
 Select the best optional Risk Play or return `null`.
 
-## Hard source rules
-- Use only claim IDs present in `game-board/claim-catalog.json`.
-- Use only match_id, team_id, and player_id values from the current game board.
-- Never invent a player_id, team_id, or match_id.
-- Keep any team or player tied to the same match row in `game-board/matches.json`.
-- Use public web data only as a secondary signal when it improves confidence and does not conflict with the board.
+## Source of truth
+- Read `game-board/claim-catalog.json`, `game-board/matches.json`, `game-board/players.json`, `game-board/teams.json`, and `game-board/standings-before.json`.
+- Use only `claim_id` values present in the catalog.
+- Use only `match_id`, `team_id`, and `player_id` values that exist in the current game board.
+- Never invent a match, team, player, or claim.
+- For team- or player-based claims, keep the referenced team or player tied to the same match row in `matches.json`.
 
 ## Selection rules
 - Prefer Green claims over Yellow claims over Red claims.
-- Prefer lower-variance claims over exact-score or high-volatility claims.
+- Prefer low-variance claims over exact-score or high-volatility claims.
 - Return `null` when no claim is clearly stronger than skipping.
 - Choose a player-based claim only when the player is a strong starter with a realistic path to scoring.
 - Choose a team-based claim only when the match context clearly supports it.
+
+## Optional web use
+If public web research is available in the run context, use it only to confirm or refine a claim that is already supported by the board. Do not rely on web data to invent ids or override the claim catalog.
 
 ## Validation
 Before finalizing, verify:
