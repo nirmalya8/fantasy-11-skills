@@ -7,15 +7,18 @@ This package contains two skills:
 
 Tight rule: use `game-board/players.json` as the only source of `player_id` values. Never invent players, teams, positions, eligibility, stats, injuries, suspensions, or other details.
 
-Use game-board metrics first. Public web data may be used only as an optional tie-breaker when available, and must never override the board's player pool, player IDs, eligibility, or explicit manual exclusions.
+Use game-board metrics first. Public web research may be used only when the run context allows it and only through organizer-approved domains listed in `team/README.md`.
 
-## Manual player exclusions
+## Research-based availability
 
-The following player IDs must not be selected by `pick-fantasy-xi`:
+`pick-fantasy-xi` depends on organizer-approved research to identify players who are injured, suspended, unavailable, ruled out, withdrawn, doubtful, or not in the squad for the current matchday.
 
-- player_id 276: injured
-- player_id 545: injured
+The skill must only research players who already exist in `game-board/players.json` and are eligible for the current `matchday_id`.
 
-Manual exclusions are hard constraints. Excluded player IDs are matched against `game-board/players.json`, removed before scoring, and must not appear in the final XI.
+If approved research clearly reports that an eligible player is injured, suspended, unavailable, ruled out, withdrawn, or not in the squad, that player must be removed from the candidate pool before scoring.
 
-Player names are optional when a `player_id` is provided.
+If approved research says a player is doubtful, recovering, limited, or has a fitness concern but does not clearly rule the player out, the player remains eligible but receives a negative research bonus.
+
+Research must never add players, change player IDs, change positions, override eligibility, or use unapproved domains.
+
+Final Fantasy XI output must contain only valid `player_id` values from `game-board/players.json`.
