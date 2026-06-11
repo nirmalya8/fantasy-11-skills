@@ -144,8 +144,16 @@ Before finalizing, verify:
 - 1 to 3 forwards are selected
 - the formation is legal under `rules/fantasy-xi.md`
 - no invented details were used
+- every Fantasy XI value is a `player_id`, not a score, name, position, or ranking value
+- no decimal number appears as a Fantasy XI `player_id`
 - output matches `output-format/daily-submission.schema.json`
 
 ## Output discipline
 
 Return only the daily submission JSON required by the tournament schema.
+
+Return only valid `player_id` values from `game-board/players.json` in the Fantasy XI output.
+
+Never output player names, player scores, projected totals, positions, explanations, or decimal values inside the Fantasy XI array.
+
+Before returning JSON, verify that every Fantasy XI entry is an exact `player_id` from `players.json`.
