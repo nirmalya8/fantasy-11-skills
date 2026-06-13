@@ -41,6 +41,85 @@ The `player_score` is a relative confidence score, not a predicted fantasy-point
 - If a metric is missing, omit that scoring term entirely.
 - Do not estimate missing metrics or fill them in from memory.
 
+## FIFA Ranking Table (Official FIFA Ranking - 11 June 2026)
+
+Use these rankings as a fixed strength signal.
+
+Lower rank number = stronger team.
+
+Argentina=1
+Spain=2
+France=3
+England=4
+Portugal=5
+Brazil=6
+Morocco=7
+Netherlands=8
+Belgium=9
+Germany=10
+Croatia=11
+Mexico=13
+Colombia=14
+USA=15
+Senegal=16
+Uruguay=17
+Japan=18
+Switzerland=19
+Iran=20
+South Korea=22
+Türkiye=23
+Ecuador=24
+Austria=25
+Australia=27
+Algeria=28
+Egypt=29
+Norway=30
+Canada=31
+Ivory Coast=33
+Panama=34
+Scotland=40
+Paraguay=42
+Czechia=43
+Tunisia=45
+DR Congo=46
+Uzbekistan=50
+Qatar=56
+Iraq=57
+Saudi Arabia=60
+South Africa=61
+Bosnia and Herzegovina=63
+Jordan=64
+Cape Verde=67
+Ghana=73
+Curacao=82
+Haiti=83
+New Zealand=85
+
+## Match team mapping and rank-based stack rule
+
+For each match:
+
+1. Read `home_team_id` and `away_team_id` from `game-board/matches.json`.
+2. Map each `team_id` to its team name using `game-board/teams.json`.
+3. Map each team name to its hardcoded FIFA rank.
+4. Treat the lower rank number as the stronger team.
+5. Compute `rank_gap = abs(rank_home - rank_away)`.
+
+## Rank-based player quota for the two match teams
+
+Use the two teams in the selected match as the main stack pool.
+
+Strong team quota:
+- rank_gap <= 10  -> choose 1-2 players from both teams
+- rank_gap 11-25 -> choose 3-4 players from the stronger team
+- rank_gap > 25   -> choose 4-5 players from the stronger team
+
+Weak team quota:
+- choose at least 1 player from the weaker team when legal
+- never choose more than 4 players from the weaker team unless needed to satisfy position legality
+
+Keep the flexibility to accomodate more or less players from a team to satisfy position legality.
+
 
 ## Manual availability overrides
 

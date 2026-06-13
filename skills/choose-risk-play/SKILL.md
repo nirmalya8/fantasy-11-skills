@@ -138,7 +138,7 @@ Do not automatically prefer Green over Yellow or Red.
 A higher-stake Yellow or Red claim may be selected when board data and approved research provide strong enough support.
 
 
-Return `null` only when no valid claim has enough support to justify the downside.
+Return `null` only when no valid claim has enough support to justify the downside. Try to keep null returns to a minimum.
 
 
 ## Risk thresholds
