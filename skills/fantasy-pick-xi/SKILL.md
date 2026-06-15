@@ -97,28 +97,77 @@ New Zealand=85
 
 ## Match team mapping and rank-based stack rule
 
-For each match:
+For every match in `game-board/matches.json`:
 
-1. Read `home_team_id` and `away_team_id` from `game-board/matches.json`.
-2. Map each `team_id` to its team name using `game-board/teams.json`.
+1. Read `home_team_id` and `away_team_id`.
+2. Map each `team_id` to a team name using `game-board/teams.json`.
 3. Map each team name to its hardcoded FIFA rank.
 4. Treat the lower rank number as the stronger team.
-5. Compute `rank_gap = abs(rank_home - rank_away)`.
+5. Compute:
 
-## Rank-based player quota for the two match teams
+rank_gap = abs(rank_home - rank_away)
 
-Use the two teams in the selected match as the main stack pool.
+6. Create a list of all stronger teams and their rank gaps.
+7. Sort the stronger teams by descending rank gap.
 
-Strong team quota:
-- rank_gap <= 10  -> choose 1-2 players from both teams
-- rank_gap 11-25 -> choose 3-4 players from the stronger team
-- rank_gap > 25   -> choose 4-5 players from the stronger team
+The larger the rank gap, the higher the priority.
 
-Weak team quota:
-- choose at least 1 player from the weaker team when legal
-- never choose more than 4 players from the weaker team unless needed to satisfy position legality
+## Stronger-team quota allocation
 
-Keep the flexibility to accomodate more or less players from a team to satisfy position legality.
+Allocate players to stronger teams first.
+
+For each stronger team in descending rank-gap order:
+
+- rank_gap <= 10:
+  - target 1-2 players
+
+- rank_gap 11-25:
+  - target 2-3 players
+
+- rank_gap > 25:
+  - target 3-4 players
+
+Apply these quotas in order from largest rank gap to smallest rank gap.
+
+Never select more than 4 players from a single team.
+
+## Weaker-team allocation
+
+After all stronger-team quotas have been allocated:
+
+1. Fill remaining roster spots using players from weaker teams.
+2. Prefer weaker teams with:
+   - smaller rank deficits
+   - stronger player projections
+   - better historical metrics
+3. Select at least 1 player from a weaker team when it improves projected fantasy points.
+4. Never select more than 4 players from a single weaker team.
+
+## Position legality override
+
+The following rules always take precedence over stacking:
+
+- exactly 11 players
+- exactly 1 goalkeeper
+- 3-5 defenders
+- 3-5 midfielders
+- 1-3 forwards
+
+If a stacking quota conflicts with position legality:
+
+1. Reduce the quota of the lowest-priority stack first.
+2. Keep higher rank-gap stacks intact whenever possible.
+3. Continue until a legal XI is produced.
+
+## Final optimization
+
+After quotas are applied:
+
+1. Score all remaining candidates using the fantasy projection model.
+2. Choose the highest projected legal XI.
+3. Validate that every selected `player_id` exists in `game-board/players.json`.
+4. Validate that no team has more than 4 selected players.
+5. Validate that the lineup contains exactly 11 players.
 
 
 ## Manual availability overrides
