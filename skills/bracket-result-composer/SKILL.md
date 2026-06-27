@@ -34,9 +34,10 @@ Do not use projection-first reasoning. Do not prioritize forecast markers, provi
 Use only these football signals for winner selection:
 
 - `form`
-- `goal_difference`
-- `goals_for`
-- `goals_against`
+- `wins`
+- `draws`
+- `losses`
+- `group_rank`
 - FIFA rank and strength from `references/fifa-rankings.json`
 
 Ignore projection fields such as:
@@ -61,13 +62,16 @@ If `form` is a string such as `WLD`, convert it into recent-form points:
 - `D` = draw = 1
 - `L` = loss = 0
 
-Then divide by the maximum possible points in that sample to get a 0 to 1 form score.
+Then divide by the maximum possible points in that sample to get a 0 to 1 `form_score`.
 
-Normalize the other fields within the current candidate pool:
+Use the record counts from the standings data:
 
-- higher `goal_difference` = better
-- higher `goals_for` = better
-- lower `goals_against` = better
+- higher `wins` = better
+- higher `draws` = better, but with less weight than wins
+- lower `losses` = better
+- lower `group_rank` = better
+
+Normalize these values within the current candidate pool before scoring.
 
 Look up each team in `references/fifa-rankings.json` using the official team name from `bracket.json` / `teams.json`. If a team is missing from the JSON, treat FIFA strength as neutral and do not invent a value.
 
@@ -75,20 +79,27 @@ Look up each team in `references/fifa-rankings.json` using the official team nam
 
 Compute:
 
-`team_score = (0.35 * form_score) + (0.25 * gd_score) + (0.15 * gf_score) + (0.10 * ga_score) + (0.15 * fifa_strength_score)`
+`team_score = (0.25 * form_score) + (0.18 * win_score) + (0.10 * draw_score) + (0.17 * loss_score) + (0.20 * group_rank_score) + (0.10 * fifa_strength_score)`
 
-where `ga_score` is inverted so fewer goals conceded produces a higher score, and `fifa_strength_score` is the normalized strength from `references/fifa-rankings.json`.
+where:
+
+- `win_score` increases with more wins
+- `draw_score` increases with more draws
+- `loss_score` is inverted so fewer losses produces a higher score
+- `group_rank_score` is inverted so a lower group rank produces a higher score
+- `fifa_strength_score` is the normalized strength from `references/fifa-rankings.json`
 
 ### 3) tie-break order
 
 If scores are tied, break ties in this order:
 
-1. higher `goal_difference`
-2. higher `goals_for`
-3. fewer `goals_against`
-4. higher FIFA strength from `references/fifa-rankings.json`
-5. stable identity tie-breaker: `team_id`
-6. then `display_name`
+1. higher `wins`
+2. fewer `losses`
+3. lower `group_rank`
+4. higher `draws`
+5. higher FIFA strength from `references/fifa-rankings.json`
+6. stable identity tie-breaker: `team_id`
+7. then `display_name`
 
 Do not use randomness.
 
