@@ -1,6 +1,6 @@
 ---
 name: bracket-result-composer
-description: compose compliant knockout bracket results from bracket and standings inputs for bracket-only runs. use when given game-board bracket files, team files, and standings files to produce one winner for every required match, keep every later-round pick reachable from earlier winners, and set champion_team_id to the final winner.
+description: compose compliant knockout bracket results from bracket and standings inputs for bracket-only runs. use when given game-board bracket files, team files, standings files, and references/fifa-rankings.json to produce one winner for every required match, keep every later-round pick reachable from earlier winners, and set champion_team_id to the final winner.
 ---
 
 # bracket result composer
@@ -11,7 +11,7 @@ Produce a knockout bracket result that is internally consistent from the opening
 
 ## files to read first
 
-Read the available bracket and standings files before choosing winners:
+Read the available bracket, standings, and ranking files before choosing winners:
 
 - `game-board/bracket.json`
 - `game-board/matches.json`
@@ -19,6 +19,7 @@ Read the available bracket and standings files before choosing winners:
 - `game-board/world-cup-standings.json`
 - `game-board/bracket-context.json`
 - `current-standings/leaderboard.json` when present
+- `references/fifa-rankings.json`
 
 Treat `standings-before.json` and `current-standings/leaderboard.json` as fantasy leaderboard context only if they are provided. Do not use them as World Cup group tables.
 
@@ -36,6 +37,7 @@ Use only these football signals for winner selection:
 - `goal_difference`
 - `goals_for`
 - `goals_against`
+- FIFA rank and strength from `references/fifa-rankings.json`
 
 Ignore projection fields such as:
 
@@ -67,13 +69,15 @@ Normalize the other fields within the current candidate pool:
 - higher `goals_for` = better
 - lower `goals_against` = better
 
+Look up each team in `references/fifa-rankings.json` using the official team name from `bracket.json` / `teams.json`. If a team is missing from the JSON, treat FIFA strength as neutral and do not invent a value.
+
 ### 2) weighted score
 
 Compute:
 
-`team_score = (0.40 * form_score) + (0.30 * gd_score) + (0.20 * gf_score) + (0.10 * ga_score)`
+`team_score = (0.35 * form_score) + (0.25 * gd_score) + (0.15 * gf_score) + (0.10 * ga_score) + (0.15 * fifa_strength_score)`
 
-where `ga_score` is inverted so fewer goals conceded produces a higher score.
+where `ga_score` is inverted so fewer goals conceded produces a higher score, and `fifa_strength_score` is the normalized strength from `references/fifa-rankings.json`.
 
 ### 3) tie-break order
 
@@ -82,8 +86,9 @@ If scores are tied, break ties in this order:
 1. higher `goal_difference`
 2. higher `goals_for`
 3. fewer `goals_against`
-4. stable identity tie-breaker: `team_id`
-5. then `display_name`
+4. higher FIFA strength from `references/fifa-rankings.json`
+5. stable identity tie-breaker: `team_id`
+6. then `display_name`
 
 Do not use randomness.
 
