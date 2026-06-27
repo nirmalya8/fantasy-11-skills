@@ -1,11 +1,12 @@
 # World Cup Fantasy Picks
 
 
-This package contains two skills:
+This package contains three skills:
 
 
 - `pick-fantasy-xi` for the daily Fantasy XI answer
 - `choose-risk-play` for the optional Risk Play decision
+- `bracket-result-composer` for bracket play 
 
 
 Tight rule: use `game-board/players.json` as the only source of `player_id` values. Never invent players, teams, positions, eligibility, stats, injuries, suspensions, or other details.
